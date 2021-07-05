@@ -1,0 +1,116 @@
+<head>
+  <link href="https://vjs.zencdn.net/7.8.4/video-js.css" rel="stylesheet" />
+  <link href="hls/videojs-seek-buttons/videojs-seek-buttons.css" rel="stylesheet" />
+  <link href="hls/videojs-hls-quality-selector/videojs-hls-quality-selector.css" rel="stylesheet" />
+  <!-- If you'd like to support IE8 (for Video.js versions prior to v7) -->
+  <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+  <script src="https://vjs.zencdn.net/7.8.4/video.js"></script>
+  <script src="hls/videojs-contrib-hls/videojs-contrib-hlsjs.min.js"></script>
+  <script src="hls/videojs-seek-buttons/videojs-seek-buttons.min.js"></script>
+  <script src="hls/videojs-contrib-quality-levels/videojs-contrib-quality-levels.min.js"></script>
+  <script src="hls/videojs-hls-quality-selector/videojs-hls-quality-selector.min.js"></script>
+  <script src="hls/videojs-resume/store.everything.min.js"></script>
+  <script src="hls/videojs-resume/videojs-resume.min.js"></script>
+</head>
+<body>
+  
+<video
+    id="video{{video_id}}"
+    class="video-js vjs-default-skin"
+    preload="auto"
+    style="position: relative !important; width: {{width}} !important; height:{{height}} !important;"
+    data-setup='{ "playbackRates": [0.5, 1, 1.5, 2] }'
+    controls
+>
+<track label="Subtitles" kind="subtitles" srclang="language_code"
+    src="{{wwwroot}}/local/video_directory/subs.php?video_id={{video_id}}" default>
+<source src="{{symlinkstream}}" type="{{type}}"/>
+<p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a
+      web browser that
+      <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+</p>
+</video>
+
+
+
+
+<script>
+    (function(window, videojs) {
+      var player = window.player = videojs('video{{video_id}}');
+      var seekButtons = window.seekButtons = player.seekButtons({
+        forward: 10,
+        back: 10
+      });
+    }(window, window.videojs));
+   
+/*
+    (function(window, videojs) {
+      var player = window.player = videojs('video{{video_id}}');
+      player.Resume({
+      uuid: 'video{{video_id}}',
+      playbackOffset: 5, // begin playing video this number of seconds before it otherwise would.
+      title: 'Continue from last playback',
+      resumeButtonText: 'Resume',
+      cancelButtonText: 'Cancel'
+     }); 
+   }(window, window.videojs));
+*/
+
+    (function(window, videojs) {
+        var player = window.player = videojs('video{{video_id}}');   
+            player.hlsQualitySelector({
+            displayCurrentQuality: true,
+        });
+        
+      }(window, window.videojs));
+</script>
+</body>
+
+<script>
+  videojs('video{{video_id}}').ready(function() {
+
+    var myPlayer = this;
+    document.onkeypress = function(e){
+      if((e || window.event).keyCode === 32){
+        e.preventDefault();
+          myPlayer.paused() ? myPlayer.play() : myPlayer.pause();        
+      }
+    };
+  });
+</script>
+
+{{#disableseek}}
+<script>
+  videojs('video{{video_id}}').ready(function() {
+    
+    var myPlayer = this;
+    //Set initial time to 0
+    var currentTime = 0;
+    
+    //This example allows users to seek backwards but not forwards.
+    //To disable all seeking replace the if statements from the next
+    //two functions with myPlayer.currentTime(currentTime);
+    myPlayer.on("seeking", function(event) {
+      if (currentTime < myPlayer.currentTime()) {
+        myPlayer.currentTime(currentTime);
+      }
+    });
+    myPlayer.on("seeked", function(event) {
+      if (currentTime < myPlayer.currentTime()) {
+        myPlayer.currentTime(currentTime);
+      }
+    });
+    setInterval(function() {
+      if (!myPlayer.paused()) {
+        currentTime = myPlayer.currentTime();
+      }
+    }, 1000);
+  });
+</script>
+{{/disableseek}}
+
+
+<script>
+	player.play();
+</script> 

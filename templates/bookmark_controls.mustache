@@ -1,0 +1,148 @@
+<form class="bookmarkform" id="bookmarkform-{{uniqid}}">
+	<h4>{{#str}}addsmartbookmark, mod_videostream{{/str}}</h4>
+	<div class="form-inline form-group">
+		<input type="hidden" name="bookmarkposition" class="form-control" value="00:00" id="bookmark-position-{{uniqid}}">
+		<!--label>{{#str}}time, mod_videostream{{/str}}:</label-->
+		<input type="text" readonly disabled name="bookmarkpositionvisible" class="form-control" id="bookmark-position-visible-{{uniqid}}">
+		<label>{{#str}}bookmarkname, mod_videostream{{/str}}:</label>
+		<input name="bookmarkname" class="form-control" id="bookmarkname-{{uniqid}}">
+		<button id="bookmarkflagtoggle-{{uniqid}}" class="btn"><i class="fa fa-flag"></i></button>
+		<input name="bookmarkflag" type="hidden" value="0">
+		<input name="id" type="hidden" value="{{moduleid}}">
+		<input type="submit" class="btn btn-primary" id="bookmarksave-{{uniqid}}">
+		
+		{{#isteacher}}
+ 			<br><input type="checkbox" id="teacherbookmark" name="teacherbookmark" value = "0">
+			<label for="teacherbookmark">{{#str}}addteacherbookmark, mod_videostream{{/str}}</label>
+		{{/isteacher}}
+		
+
+	</div>
+</form>
+<div id="videobookmarklist">
+{{#bookmarks}}
+	{{> mod_videostream/bookmark}}
+{{/bookmarks}}
+</div>
+{{#js}}
+require(['jquery', 'core/templates'], function($, templates) {
+	var video = $('#video{{videoid}}_html5_api')[0];
+	var video_vimeoid;
+
+	if (video == 'undefined' || !video) {
+		video_vimeoid = $("[videoid={{videoid}}]").attr("id");
+		if (typeof video_vimeoid !== "undefined") {
+			var video = new Vimeo.Player(video_vimeoid);
+		}
+	}
+	$('#bookmarkname-{{uniqid}}').keydown(function() {
+		if ($(this).val() === '') {
+			$(this).data('dirty', false);
+		}
+
+		if (!$(this).data('dirty')) {
+			$(this).data('dirty', true);
+			if (typeof video_vimeoid !== "undefined" || video_vimeoid) {
+            	video.getCurrentTime().then(function(data) {
+					var currenttime = data;
+					$('#bookmark-position-{{uniqid}}').val(currenttime);
+					$('#bookmark-position-visible-{{uniqid}}').val(s_to_hms(currenttime));
+				});
+			} else {
+				var currenttime = video.currentTime;
+				$('#bookmark-position-{{uniqid}}').val(currenttime);
+				$('#bookmark-position-visible-{{uniqid}}').val(s_to_hms(currenttime));
+			}
+
+		}
+	});
+
+	$('#bookmarkflagtoggle-{{uniqid}}').click(function(e) {
+		e.preventDefault();
+		var currentval = $(this).next().val();
+		$(this).toggleClass('flagged').next().val(1 - currentval);
+	});
+	$('#bookmarksave-{{uniqid}}').click(function(e) {
+		e.preventDefault();
+		if ($('#bookmarkname-{{uniqid}}').val() === '') {
+			return;
+		}
+		var theform = $('#bookmarkform-{{uniqid}}');
+		//var currenttime = video.currentTime;
+		//theform[0][0].value = currenttime;
+		console.log(theform);
+		if (typeof video_vimeoid !== "undefined" || video_vimeoid) {
+			video.getCurrentTime().then(function(data) {
+			var currenttime = data;
+			theform[0][0].value = currenttime;
+			$('#bookmark-position-{{uniqid}}').val(currenttime);
+			$('#bookmark-position-visible-{{uniqid}}').val(s_to_hms(currenttime));
+				});
+		} else {
+			var currenttime = video.currentTime;
+			theform[0][0].value = currenttime;
+			$('#bookmark-position-{{uniqid}}').val(currenttime);
+			$('#bookmark-position-visible-{{uniqid}}').val(s_to_hms(currenttime));
+		}		
+		
+		var checkBox = $('#teacherbookmark');
+		if (checkBox.is(':checked')) {
+			  $("#teacherbookmark").val("1");
+		} 
+	
+		$.post(M.cfg.wwwroot + '/mod/videostream/ajax_save.php', theform.serialize(), function(data) {
+			console.log(data);
+
+			var context = data;
+			theform[0].reset();
+			context.bookmarkflag = context.bookmarkflag === "0" ? null : context.bookmarkflag;
+			context.isteacher = $("#teacherbookmark").val("1") ? true : false;
+			context.bookmarkpositionvisible = s_to_hms(context.bookmarkposition);
+
+			templates
+				.render('mod_videostream/bookmark', context)
+				.then(function(html, js) {
+					templates.appendNodeContents('#videobookmarklist', html, js);
+				}).fail(function(ex) {
+					console.log(ex);
+				});
+		});
+	});
+	
+	$('#videobookmarklist').on('click', 'a', function(e) {
+		if (typeof video_vimeoid !== "undefined" || video_vimeoid) {
+            video.setCurrentTime($(this).data('position'));
+		} else {
+			video.currentTime = $(this).data('position');
+		}
+	});
+	
+	$('#videobookmarklist').on('click', '.deletebookmark', function(e) {
+		if (!confirm('{{#str}}deletebookmark, mod_videostream{{/str}}')) {
+			return;
+		}
+		var elem = $(this);
+		$.post(M.cfg.wwwroot + '/mod/videostream/ajax_save.php', {delete: elem.data('id')}, function(data) {
+			console.log($(this), $(this).closest('div'));
+			elem.closest('div').hide(400, function () {elem.remove()});
+		});
+	});
+	
+	function s_to_hms(totalSeconds) {
+		hours = Math.floor(totalSeconds / 3600);
+		if (hours < 10) {
+			hours = '0' + hours;
+		}
+		totalSeconds %= 3600;
+		minutes = Math.floor(totalSeconds / 60);
+		if (minutes < 10) {
+			minutes = '0' + minutes;
+		}
+		seconds = ~~(totalSeconds % 60);
+		if (seconds < 10) {
+			seconds = '0' + seconds;
+		}
+		return hours + ':' + minutes + ':' + seconds
+	}
+});
+{{/js}}

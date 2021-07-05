@@ -1,0 +1,86 @@
+<video 
+  id="video{{videoid}}" 
+  class="video-js vjs-default-skin" 
+  data-setup='{ "playbackRates": [0.5, 1, 1.5, 2] }' 
+  style="position: relative !important; width: {{width}} !important; height: {{height}} !important;" 
+  controls> 
+  <track label="Subtitles" kind="subtitles" srclang="language_code"
+    src="{{wwwroot}}/local/video_directory/subs.php?video_id={{videoid}}" default>
+  <source src="{{hlsstream}}" type="application/x-mpegURL"/>
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a
+      web browser that
+      <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+</video>
+
+<script src="https://vjs.zencdn.net/7.8.4/video.js"></script>
+<script src="hls/videojs-contrib-hls/videojs-contrib-hlsjs.min.js"></script>
+<script src="hls/videojs-seek-buttons/videojs-seek-buttons.min.js"></script>
+<script src="hls/videojs-contrib-quality-levels/videojs-contrib-quality-levels.min.js"></script>
+<script src="hls/videojs-hls-quality-selector/videojs-hls-quality-selector.min.js"></script>
+<!--script src="hls/videojs-resume/store.everything.min.js"></script>
+<script src="hls/videojs-resume/videojs-resume.min.js"></script-->
+
+<script>
+  var player = videojs('video{{videoid}}');
+   $("#video{{videoid}}").webkitEnterFullScreen();
+
+  (function(window, videojs) {
+      var player = window.player = videojs('video{{videoid}}');
+      var seekButtons = window.seekButtons = player.seekButtons({
+        forward: 10,
+        back: 10
+      });
+    }(window, window.videojs));
+
+    (function(window, videojs) {
+      var player = window.player = videojs('video{{videoid}}');
+      player.hlsQualitySelector({
+          displayCurrentQuality: true,
+      });
+    }(window, window.videojs));
+
+/*
+    (function(window, videojs) {
+    var player = window.player = videojs('video{{videoid}}');
+    player.Resume({
+      uuid: 'UNIQUE_VIDEO_IDENTIFIER',
+      playbackOffset: 5, // begin playing video this number of seconds before it otherwise would.
+      title: 'Continue from last playback',
+      resumeButtonText: 'Resume',
+      cancelButtonText: 'Cancel'
+     });
+   }(window, window.videojs));
+*/
+</script>   
+
+{{#disableseek}}
+<script>
+  videojs('video{{videoid}}').ready(function() {
+    
+    var myPlayer = this;
+    //Set initial time to 0
+    var currentTime = 0;
+    
+    //This example allows users to seek backwards but not forwards.
+    //To disable all seeking replace the if statements from the next
+    //two functions with myPlayer.currentTime(currentTime);
+    myPlayer.on("seeking", function(event) {
+      if (currentTime < myPlayer.currentTime()) {
+        myPlayer.currentTime(currentTime);
+      }
+    });
+    myPlayer.on("seeked", function(event) {
+      if (currentTime < myPlayer.currentTime()) {
+        myPlayer.currentTime(currentTime);
+      }
+    });
+    setInterval(function() {
+      if (!myPlayer.paused()) {
+        currentTime = myPlayer.currentTime();
+      }
+    }, 1000);
+  });
+</script>
+{{/disableseek}}

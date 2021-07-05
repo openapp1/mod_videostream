@@ -1,0 +1,57 @@
+<span>
+	<video controls="true" width="400" preload="metadata" title="{{cmid}}" style="width: {{width}}; height: {{height}} !important;">
+		<track label="Subtitles" kind="subtitles" srclang="language_code"
+    src="{{wwwroot}}/local/video_directory/subs.php?video_id={{id}}" default>
+    <source src="{{streaming}}" type="video/mp4">
+	</video>
+</span>
+
+
+<script language='JavaScript'>
+    //var v = document.getElementsByTagName('video');
+    var v = document.querySelector('video[title="{{cmid}}"]');console.log(v);
+    
+    
+    v.addEventListener('seeked', function() { sendEvent_{{cmid}}('seeked'); }, true);
+    v.addEventListener('play', function() { sendEvent_{{cmid}}('play'); }, true);
+    v.addEventListener('stop', function() { sendEvent_{{cmid}}('stop'); }, true);
+    v.addEventListener('pause', function() { sendEvent_{{cmid}}('pause'); }, true);
+    v.addEventListener('ended', function() { sendEvent_{{cmid}}('ended'); }, true);
+    v.addEventListener('ratechange', function() { sendEvent_{{cmid}}('ratechange'); }, true);
+    
+    function sendEvent_{{cmid}}(event) {
+        require(['jquery'], function($) {
+            $.post( '{{wwwroot}}/mod/videostream/ajax.php',{ mid: {{cmid}}, videoid: {{id}}, action: event, sesskey: '{{sesskey}}' } );
+        });
+    }
+</script>
+
+{{#disableseek}}
+<script>
+  videojs('video').ready(function() {
+    
+    var myPlayer = this;
+    //Set initial time to 0
+    var currentTime = 0;
+    
+    //This example allows users to seek backwards but not forwards.
+    //To disable all seeking replace the if statements from the next
+    //two functions with myPlayer.currentTime(currentTime);
+    myPlayer.on("seeking", function(event) {
+      if (currentTime < myPlayer.currentTime()) {
+        myPlayer.currentTime(currentTime);
+      }
+    });
+    myPlayer.on("seeked", function(event) {
+      if (currentTime < myPlayer.currentTime()) {
+        myPlayer.currentTime(currentTime);
+      }
+    });
+    setInterval(function() {
+      if (!myPlayer.paused()) {
+        currentTime = myPlayer.currentTime();
+      }
+    }, 1000);
+  });
+</script>
+{{/disableseek}}

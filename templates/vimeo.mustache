@@ -1,0 +1,33 @@
+<html>
+<head>
+</head>
+<body>
+  <div 
+  videoid="{{video_id}}" 
+  data-vimeo-id="{{video_vimeoid}}" 
+  data-vimeo-controls="true"
+  data-vimeo-width="{{width}}" 
+  data-vimeo-height="{{height}}"  
+  data-vimeo-responsive="{{responsive}}" 
+  id="{{video_vimeoid}}">
+  </div>
+
+  <script src="https://player.vimeo.com/api/player.js"></script>
+  <script>
+    var player = new Vimeo.Player("{{video_vimeoid}}");
+    var timeWatched = 0;
+
+    player.on("timeupdate", function(data) {
+        if (data.seconds - 1 < timeWatched && data.seconds > timeWatched) {
+            timeWatched = data.seconds;
+        }
+    });
+
+    player.on("seeked", function(data) {
+        if (timeWatched < data.seconds && {{prevent_seek}} == 1) {
+            player.setCurrentTime(timeWatched);
+        }
+    });
+  </script>
+</body>
+</html>

@@ -5,6 +5,7 @@
            class="video-js vjs-default-skin" 
            data-setup='{}' 
            style="position: relative !important; width: {{width}} !important; height: {{height}} !important;" 
+           onContextMenu="return false;"
            controls> 
     <track label="Subtitles" kind="subtitles" srclang="language_code"
     src="{{wwwroot}}/local/video_directory/subs.php?video_id={{id}}" default>

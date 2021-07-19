@@ -3,6 +3,7 @@
   class="video-js vjs-default-skin" 
   data-setup='{ "playbackRates": [0.5, 1, 1.5, 2] }' 
   style="position: relative !important; width: {{width}} !important; height: {{height}} !important;" 
+  onContextMenu="return false;"
   controls> 
   <track label="Subtitles" kind="subtitles" srclang="language_code"
     src="{{wwwroot}}/local/video_directory/subs.php?video_id={{videoid}}" default>

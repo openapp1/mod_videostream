@@ -1,5 +1,12 @@
 <span>
-	<video controls="true" width="400" preload="metadata" title="{{cmid}}" style="width: {{width}}; height: {{height}} !important;">
+	<video 
+  controls="true" 
+  width="400" 
+  preload="metadata" 
+  title="{{cmid}}" 
+  style="width: {{width}}; height: {{height}} !important;"  
+  onContextMenu="return false;"
+>
 		<track label="Subtitles" kind="subtitles" srclang="language_code"
     src="{{wwwroot}}/local/video_directory/subs.php?video_id={{id}}" default>
     <source src="{{streaming}}" type="video/mp4">

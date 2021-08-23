@@ -307,7 +307,7 @@ class mod_videostream_renderer extends plugin_renderer_base {
         $videoid = $videostream->get_instance()->videoid;
         $moduleid = $videostream->get_course_module()->id;
         $isteacher = $this->is_teacher();
-        $sql = "select * from mdl_videostreambookmarks
+        $sql = "select * from {videostreambookmarks}
         where (userid =? or teacherid IS NOT NULL) and moduleid = ?";
 
         $bookmarks = $DB->get_records_sql($sql, ['userid' => $USER->id, 'moduleid' => $moduleid]);
